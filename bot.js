@@ -17,36 +17,86 @@ app.use(express.static("panel/public"));
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log("Ronny control panel running on port " + PORT);
+  console.log("Rohit control panel running on port " + PORT);
 });
 
 let manualControl = false;
 
-const bot = mineflayer.createBot({
-  host: process.env.MC_HOST,
-  port: parseInt(process.env.MC_PORT),
-  username: "Ronny",
-  version: false
-});
+let bot;
 
-bot.loadPlugin(pathfinder);
+function createBot() {
 
-bot.once("spawn", () => {
+  bot = mineflayer.createBot({
+    host: process.env.MC_HOST,
+    port: parseInt(process.env.MC_PORT),
+    username: "Rohit",
+    version: false
+  });
 
-  console.log("Ronny joined the Minecraft server");
+  bot.loadPlugin(pathfinder);
 
-  const mcData = require("minecraft-data")(bot.version);
-  const movements = new Movements(bot, mcData);
+  bot.once("spawn", () => {
 
-  bot.pathfinder.setMovements(movements);
+    console.log("Rohit joined the Minecraft server");
 
-  randomWalk();
+    const mcData = require("minecraft-data")(bot.version);
+    const movements = new Movements(bot, mcData);
 
-});
+    bot.pathfinder.setMovements(movements);
+
+    // auto login
+    setTimeout(() => {
+      bot.chat("/login cpmp0043");
+    }, 4000);
+
+    randomWalk();
+
+  });
+
+  bot.on("chat", async (username, message) => {
+
+    if (username === bot.username) return;
+
+    const reply = await askAI(username, message);
+
+    bot.chat(reply);
+
+    io.emit("chat", `${username}: ${message}`);
+    io.emit("chat", `Rohit: ${reply}`);
+
+  });
+
+  bot.on("kicked", (reason) => {
+
+    console.log("Bot kicked:", reason);
+
+  });
+
+  bot.on("end", () => {
+
+    console.log("Disconnected. Reconnecting in 10 seconds...");
+
+    setTimeout(() => {
+      createBot();
+    }, 10000);
+
+  });
+
+  bot.on("error", (err) => {
+
+    console.log("Error:", err);
+
+  });
+
+}
+
+createBot();
 
 function randomWalk() {
 
   setInterval(() => {
+
+    if (!bot || !bot.entity) return;
 
     if (manualControl) return;
 
@@ -61,24 +111,11 @@ function randomWalk() {
 
 }
 
-bot.on("chat", async (username, message) => {
-
-  if (username === bot.username) return;
-
-  const reply = await askAI(username, message);
-
-  bot.chat(reply);
-
-  io.emit("chat", `${username}: ${message}`);
-  io.emit("chat", `Ronny: ${reply}`);
-
-});
-
 io.on("connection", socket => {
 
   socket.on("say", msg => {
 
-    bot.chat(msg);
+    if (bot) bot.chat(msg);
 
   });
 
