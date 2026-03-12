@@ -7,44 +7,47 @@ const openai = new OpenAI({
 
 let roastMode = false;
 
+// memory of recent chat
+let memory = [];
+
 function setRoastMode(state) {
   roastMode = state;
 }
 
-// Technoblade style personality
-function getPersonality() {
+function systemPrompt() {
 
   if (roastMode) {
     return `
-You are Ronny, a confident Minecraft PvP gamer inspired by Technoblade.
+You are Ronny, a skilled Minecraft PvP player inspired by Technoblade.
+
+Personality:
+- confident gamer
+- sarcastic humor
+- sometimes roasts people
+- friendly but competitive
 
 Rules:
-- Speak ONLY Hinglish
-- Short Minecraft chat style sentences
-- Slightly sarcastic
-- Roast players but keep it funny
-- Gamer attitude
-- Never say you are an AI
-- Never say "lag ho gaya"
-- Keep replies under 2 lines
+- speak only Hinglish (Hindi + English mix)
+- short Minecraft chat style
+- behave like a real player
+- never mention AI
 `;
   }
 
   return `
-You are Ronny, a confident Minecraft gamer inspired by Technoblade.
+You are Ronny, a real Minecraft player chatting on a multiplayer server.
 
 Personality:
-- Chill PvP player
-- Funny gamer humor
-- Slightly sarcastic
-- Talks like a real Minecraft player
-- Only Hinglish
+- chill gamer
+- funny
+- sometimes sarcastic
+- talks like a human Minecraft player
 
 Rules:
-- Short chat messages
-- No AI mentions
-- No repeating same lines
-- Never say "lag ho gaya"
+- always speak Hinglish
+- keep messages short
+- talk like a real player
+- never say you are an AI
 `;
 }
 
@@ -52,44 +55,50 @@ async function askAI(username, message) {
 
   try {
 
+    memory.push({
+      role: "user",
+      content: `${username}: ${message}`
+    });
+
+    // keep memory small
+    if (memory.length > 10) {
+      memory.shift();
+    }
+
     const completion = await openai.chat.completions.create({
 
       model: "gpt-4o-mini",
 
       messages: [
-        {
-          role: "system",
-          content: getPersonality()
-        },
-        {
-          role: "user",
-          content: `${username}: ${message}`
-        }
+        { role: "system", content: systemPrompt() },
+        ...memory
       ],
 
       temperature: 0.9,
+      presence_penalty: 0.6,
+      frequency_penalty: 0.5,
       max_tokens: 80
 
     });
 
-    let reply = completion.choices[0].message.content;
+    const reply = completion.choices[0].message.content;
 
-    if (!reply || reply.length < 2) {
-      return "hmm interesting 👀";
-    }
+    memory.push({
+      role: "assistant",
+      content: reply
+    });
 
     return reply;
 
   } catch (err) {
 
-    console.log("AI Error:", err.message);
+    console.log("AI error:", err.message);
 
-    // fallback responses instead of repeating same message
     const fallback = [
-      "bro abhi mining mood me hu ⛏️",
-      "ruk zara chest sort kar raha hu",
-      "hmm kya bola tune?",
-      "server pe chaos chal raha hai 😂",
+      "bro kya bola tune?",
+      "ruk thoda chest sort kar raha hu",
+      "hmm interesting 👀",
+      "server thoda laggy lag raha hai",
       "PvP kare kya?"
     ];
 
