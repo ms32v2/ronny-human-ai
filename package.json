@@ -1,5 +1,5 @@
 {
-  "name": "ronny",
+  "name": "ronny-ai-bot",
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "express": "^4.19.2",
     "socket.io": "^4.7.5",
     "dotenv": "^16.4.5",
-    "openai": "^4.56.0"
+    "openai": "^4.56.0",
+    "minecraft-data": "^3.74.0"
   }
 }
