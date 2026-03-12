@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Snug Minecraft Bot Dashboard</title>
+</head>
+
+<body>
+
+<h1>Snug Minecraft Bot Dashboard</h1>
+
+<h2>Events</h2>
+<ul id="events"></ul>
+
+<h2>Chat</h2>
+<ul id="chat"></ul>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+
+const socket = io()
+
+socket.on("event",data=>{
+const li=document.createElement("li")
+li.textContent=data
+document.getElementById("events").appendChild(li)
+})
+
+socket.on("chat",data=>{
+const li=document.createElement("li")
+li.textContent=data.user+": "+data.message
+document.getElementById("chat").appendChild(li)
+})
+
+</script>
+
+</body>
+</html>

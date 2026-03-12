@@ -1,0 +1,9 @@
+{
+  "server": {
+    "host": "snugwars.falix.gg",
+    "port": 25565
+  },
+  "bots": ["ronny"],
+  "password": "botpass0043",
+  "reconnectDelay": 5000
+}
