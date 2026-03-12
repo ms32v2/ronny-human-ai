@@ -1,38 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Snug Minecraft Bot Dashboard</title>
-</head>
 
-<body>
+<title>Ronny Control Panel</title>
 
-<h1>Snug Minecraft Bot Dashboard</h1>
-
-<h2>Events</h2>
-<ul id="events"></ul>
-
-<h2>Chat</h2>
-<ul id="chat"></ul>
+<link rel="stylesheet" href="style.css">
 
 <script src="/socket.io/socket.io.js"></script>
 
-<script>
+</head>
+<body>
 
-const socket = io()
+<div class="container">
 
-socket.on("event",data=>{
-const li=document.createElement("li")
-li.textContent=data
-document.getElementById("events").appendChild(li)
-})
+<h1>Ronny AI Bot Console</h1>
 
-socket.on("chat",data=>{
-const li=document.createElement("li")
-li.textContent=data.user+": "+data.message
-document.getElementById("chat").appendChild(li)
-})
+<div class="controls">
 
-</script>
+<button onclick="toggleRoast()">Toggle Roast Mode</button>
+
+<button onclick="toggleManual()">Manual Control</button>
+
+</div>
+
+<div id="chat" class="chat"></div>
+
+<input id="msg" placeholder="Send message">
+
+<button onclick="send()">Send</button>
+
+</div>
+
+<script src="app.js"></script>
 
 </body>
 </html>
