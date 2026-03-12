@@ -7,25 +7,36 @@ const openai = new OpenAI({
 
 let roastMode = false;
 
-function setRoastMode(value) {
-  roastMode = value;
+function setRoastMode(state) {
+  roastMode = state;
 }
 
 async function askAI(username, message) {
 
   const personality = roastMode
-    ? `You are Ronny, a funny minecraft player who roasts people but still friendly. Speak only Hinglish.`
-    : `You are Ronny, a chill minecraft gamer. Speak only Hinglish.`;
+    ? "You are Ronny, a funny minecraft gamer who roasts players but stays friendly. Always reply in Hinglish."
+    : "You are Ronny, a chill minecraft player. Talk casually like a gamer and only speak Hinglish.";
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: personality },
-      { role: "user", content: `${username}: ${message}` }
-    ]
-  });
+  try {
 
-  return completion.choices[0].message.content;
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: personality },
+        { role: "user", content: `${username}: ${message}` }
+      ],
+      max_tokens: 80
+    });
+
+    return completion.choices[0].message.content;
+
+  } catch (err) {
+
+    console.log(err);
+    return "Lag ho gaya bhai 😅";
+
+  }
+
 }
 
 module.exports = { askAI, setRoastMode };
