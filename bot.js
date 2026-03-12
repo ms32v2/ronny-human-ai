@@ -20,8 +20,10 @@ server.listen(PORT, () => {
   console.log("Ronny control panel running on port " + PORT);
 });
 
-let manualControl = false;
 let bot;
+let manualControl = false;
+
+let lastReplyTime = 0;
 
 function createBot() {
 
@@ -43,7 +45,7 @@ function createBot() {
 
     bot.pathfinder.setMovements(movements);
 
-    // Auto login after join
+    // Auto login
     setTimeout(() => {
       bot.chat("/login cpmp0043");
     }, 4000);
@@ -56,7 +58,19 @@ function createBot() {
 
     if (username === bot.username) return;
 
+    // Only respond if Ronny is mentioned
+    if (!message.toLowerCase().includes("ronny")) return;
+
+    // Prevent spam replies
+    const now = Date.now();
+    if (now - lastReplyTime < 5000) return;
+    lastReplyTime = now;
+
+    console.log(username + ": " + message);
+
     const reply = await askAI(username, message);
+
+    if (!reply) return;
 
     bot.chat(reply);
 
@@ -66,12 +80,14 @@ function createBot() {
   });
 
   bot.on("kicked", (reason) => {
-    console.log("Bot kicked:", reason);
+
+    console.log("Ronny was kicked:", reason);
+
   });
 
   bot.on("end", () => {
 
-    console.log("Disconnected. Reconnecting in 10 seconds...");
+    console.log("Ronny disconnected. Reconnecting in 10 seconds...");
 
     setTimeout(() => {
       createBot();
@@ -80,7 +96,9 @@ function createBot() {
   });
 
   bot.on("error", (err) => {
-    console.log("Error:", err);
+
+    console.log("Bot error:", err.message);
+
   });
 
 }
@@ -109,15 +127,21 @@ function randomWalk() {
 io.on("connection", socket => {
 
   socket.on("say", msg => {
+
     if (bot) bot.chat(msg);
+
   });
 
   socket.on("roastMode", state => {
+
     setRoastMode(state);
+
   });
 
   socket.on("manual", state => {
+
     manualControl = state;
+
   });
 
 });
