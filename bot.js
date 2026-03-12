@@ -22,8 +22,7 @@ server.listen(PORT, () => {
 
 let bot;
 let manualControl = false;
-
-let lastReplyTime = 0;
+let lastReply = 0;
 
 function createBot() {
 
@@ -38,7 +37,7 @@ function createBot() {
 
   bot.once("spawn", () => {
 
-    console.log("Ronny joined the Minecraft server");
+    console.log("Ronny joined the server");
 
     const mcData = require("minecraft-data")(bot.version);
     const movements = new Movements(bot, mcData);
@@ -50,7 +49,7 @@ function createBot() {
       bot.chat("/login <cpmp0043>");
     }, 4000);
 
-    randomWalk();
+    startHumanBehaviour();
 
   });
 
@@ -58,36 +57,39 @@ function createBot() {
 
     if (username === bot.username) return;
 
-    // Only respond if Ronny is mentioned
-    if (!message.toLowerCase().includes("ronny")) return;
-
-    // Prevent spam replies
-    const now = Date.now();
-    if (now - lastReplyTime < 5000) return;
-    lastReplyTime = now;
-
     console.log(username + ": " + message);
+
+    // look at speaking player
+    const player = bot.players[username];
+    if (player && player.entity) {
+      bot.lookAt(player.entity.position.offset(0, 1.6, 0));
+    }
+
+    // prevent spam replies
+    const now = Date.now();
+    if (now - lastReply < 4000) return;
+
+    lastReply = now;
 
     const reply = await askAI(username, message);
 
     if (!reply) return;
 
-    bot.chat(reply);
+    // human typing delay
+    const delay = Math.min(4000, reply.length * 55);
+
+    setTimeout(() => {
+      bot.chat(reply);
+    }, delay);
 
     io.emit("chat", `${username}: ${message}`);
     io.emit("chat", `Ronny: ${reply}`);
 
   });
 
-  bot.on("kicked", (reason) => {
-
-    console.log("Ronny was kicked:", reason);
-
-  });
-
   bot.on("end", () => {
 
-    console.log("Ronny disconnected. Reconnecting in 10 seconds...");
+    console.log("Disconnected. Reconnecting in 10 seconds...");
 
     setTimeout(() => {
       createBot();
@@ -95,32 +97,107 @@ function createBot() {
 
   });
 
-  bot.on("error", (err) => {
+  bot.on("kicked", reason => {
+    console.log("Bot kicked:", reason);
+  });
 
+  bot.on("error", err => {
     console.log("Bot error:", err.message);
-
   });
 
 }
 
 createBot();
 
+function startHumanBehaviour() {
+
+  randomWalk();
+  idleActions();
+  randomTalking();
+
+}
+
 function randomWalk() {
 
   setInterval(() => {
 
     if (!bot || !bot.entity) return;
-
     if (manualControl) return;
 
     const pos = bot.entity.position;
 
-    const x = pos.x + (Math.random() * 10 - 5);
-    const z = pos.z + (Math.random() * 10 - 5);
+    const x = pos.x + (Math.random() * 8 - 4);
+    const z = pos.z + (Math.random() * 8 - 4);
 
     bot.pathfinder.setGoal(new goals.GoalBlock(x, pos.y, z));
 
+  }, 20000);
+
+}
+
+function idleActions() {
+
+  setInterval(() => {
+
+    if (!bot || !bot.entity) return;
+
+    const actions = ["jump", "look", "swing"];
+
+    const action = actions[Math.floor(Math.random() * actions.length)];
+
+    if (action === "jump") {
+
+      bot.setControlState("jump", true);
+
+      setTimeout(() => {
+        bot.setControlState("jump", false);
+      }, 400);
+
+    }
+
+    if (action === "look") {
+
+      bot.look(
+        Math.random() * Math.PI * 2,
+        (Math.random() - 0.5) * 0.5,
+        true
+      );
+
+    }
+
+    if (action === "swing") {
+
+      bot.swingArm();
+
+    }
+
   }, 15000);
+
+}
+
+function randomTalking() {
+
+  const lines = [
+    "koi diamonds mila kya?",
+    "PvP kare koi?",
+    "server ka base mast hai",
+    "bro main thoda mining pe ja raha hu",
+    "ye kisne build kiya?"
+  ];
+
+  setInterval(() => {
+
+    if (!bot || !bot.entity) return;
+
+    if (Math.random() < 0.35) {
+
+      const msg = lines[Math.floor(Math.random() * lines.length)];
+
+      bot.chat(msg);
+
+    }
+
+  }, 90000);
 
 }
 
