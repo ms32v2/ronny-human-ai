@@ -47,7 +47,7 @@ function createBot() {
 
     // Auto login
     setTimeout(() => {
-      bot.chat("/login cpmp0043");
+      bot.chat("/login <cpmp0043>");
     }, 4000);
 
     randomWalk();
