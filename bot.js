@@ -17,11 +17,10 @@ app.use(express.static("panel/public"));
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log("Rohit control panel running on port " + PORT);
+  console.log("Ronny control panel running on port " + PORT);
 });
 
 let manualControl = false;
-
 let bot;
 
 function createBot() {
@@ -29,7 +28,7 @@ function createBot() {
   bot = mineflayer.createBot({
     host: process.env.MC_HOST,
     port: parseInt(process.env.MC_PORT),
-    username: "Rohit",
+    username: "Ronny",
     version: false
   });
 
@@ -37,14 +36,14 @@ function createBot() {
 
   bot.once("spawn", () => {
 
-    console.log("Rohit joined the Minecraft server");
+    console.log("Ronny joined the Minecraft server");
 
     const mcData = require("minecraft-data")(bot.version);
     const movements = new Movements(bot, mcData);
 
     bot.pathfinder.setMovements(movements);
 
-    // auto login
+    // Auto login after join
     setTimeout(() => {
       bot.chat("/login cpmp0043");
     }, 4000);
@@ -62,14 +61,12 @@ function createBot() {
     bot.chat(reply);
 
     io.emit("chat", `${username}: ${message}`);
-    io.emit("chat", `Rohit: ${reply}`);
+    io.emit("chat", `Ronny: ${reply}`);
 
   });
 
   bot.on("kicked", (reason) => {
-
     console.log("Bot kicked:", reason);
-
   });
 
   bot.on("end", () => {
@@ -83,9 +80,7 @@ function createBot() {
   });
 
   bot.on("error", (err) => {
-
     console.log("Error:", err);
-
   });
 
 }
@@ -114,21 +109,15 @@ function randomWalk() {
 io.on("connection", socket => {
 
   socket.on("say", msg => {
-
     if (bot) bot.chat(msg);
-
   });
 
   socket.on("roastMode", state => {
-
     setRoastMode(state);
-
   });
 
   socket.on("manual", state => {
-
     manualControl = state;
-
   });
 
 });
