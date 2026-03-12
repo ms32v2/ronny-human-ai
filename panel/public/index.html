@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<title>Ronny Control Panel</title>
+<title>Ronny AI Bot Panel</title>
 
 <link rel="stylesheet" href="style.css">
 
 <script src="/socket.io/socket.io.js"></script>
 
 </head>
+
 <body>
 
 <div class="container">
 
-<h1>Ronny AI Bot Console</h1>
+<h1>Ronny Control Panel</h1>
 
 <div class="controls">
 
-<button onclick="toggleRoast()">Toggle Roast Mode</button>
+<button onclick="toggleRoast()">Roast Mode</button>
 
 <button onclick="toggleManual()">Manual Control</button>
 
@@ -25,7 +27,7 @@
 
 <div id="chat" class="chat"></div>
 
-<input id="msg" placeholder="Send message">
+<input id="msg" placeholder="Send message as Ronny">
 
 <button onclick="send()">Send</button>
 
@@ -34,4 +36,5 @@
 <script src="app.js"></script>
 
 </body>
+
 </html>
